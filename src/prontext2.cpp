@@ -39,5 +39,19 @@ int main (int argc, char** argv) {
       }
    }
 
-  
+   std::ifstream svoFile(argv[3]);
+   std::string subject;
+   std::string verbalPhrase;
+   std::string object;
+   std::string countStr;
+   int count;
+
+   while (svoFile.peek() != std::char_traits<char>::eof()) {
+      std::getline(svoFile, subject, '\t');
+      std::getline(svoFile, verbalPhrase, '\t');
+      std::getline(svoFile, object, '\t');
+      std::getline(svoFile, countStr);
+      count = std::stoi(countStr);
+   }
+
 }
