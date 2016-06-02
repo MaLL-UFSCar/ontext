@@ -52,6 +52,16 @@ int main (int argc, char** argv) {
       std::getline(svoFile, object, '\t');
       std::getline(svoFile, countStr);
       count = std::stoi(countStr);
+
+      for (auto &pair : categoryPairs) {
+         if (instances[pair.first]->count(subject) > 0
+               && instances[pair.second]->count(object) > 0) {
+            // count this instance f12
+         } else if (instances[pair.second]->count(subject) > 0
+               && instances[pair.first]->count(object) > 0) {
+            // count this instance f21
+         }
+      }
    }
 
 }
