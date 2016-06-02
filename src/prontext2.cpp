@@ -12,6 +12,12 @@
  * argv[3]: SVO file
  */
 
+template <unsigned int N>
+struct CoOccurrenceMatrix {
+   double matrix[N][N];
+   std::string features[N];
+};
+
 int main (int argc, char** argv) {
    std::map<std::string, std::unordered_set<std::string>* > instances;
    std::vector<std::pair<std::string, std::string> > categoryPairs;
@@ -41,7 +47,7 @@ int main (int argc, char** argv) {
             instances[category2]->reserve(8192);
             std::ifstream instanceFile(instanceDir + category1);
             std::string seed;
-            while (instanceFile >> sed) {
+            while (instanceFile >> seed) {
                instances[category2]->insert(seed);
             }
          }
