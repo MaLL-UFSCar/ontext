@@ -36,6 +36,15 @@ int main (int argc, char** argv) {
                instances[category1]->insert(seed);
             }
          }
+         if (instances.count(category2) == 0) {
+            instances[category2] = new std::unordered_set<std::string>;
+            instances[category2]->reserve(8192);
+            std::ifstream instanceFile(instanceDir + category1);
+            std::string seed;
+            while (instanceFile >> sed) {
+               instances[category2]->insert(seed);
+            }
+         }
       }
    }
 
