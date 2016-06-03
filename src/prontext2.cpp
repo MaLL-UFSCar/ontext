@@ -18,10 +18,19 @@ struct CoOccurrenceMatrix {
    std::string features[N];
 };
 
+struct CoOccurrence {
+   std::string feature1;
+   std::string feature2;
+   int count;
+}
+
+using featurePair = std::pair<std::string, std::string>;
+
 int main (int argc, char** argv) {
    std::map<std::string, std::unordered_set<std::string>* > instances;
-   std::vector<std::pair<std::string, std::string> > categoryPairs;
+   std::vector<featurePair> categoryPairs;
    categoryPairs.reserve(256);
+   std::map<featurePair, std::vector<CoOcurrence>* > coOccurrences;
 
    {
       std::ifstream categoriesFile(argv[1]);
@@ -32,7 +41,9 @@ int main (int argc, char** argv) {
       instanceDir += "/";
 
       while (categoriesFile >> category1 >> category2 >> categoryid) {
-         categoryPairs.push_back(std::make_pair(category1, category2));
+         auto pair = std::make_pair(category1, category2);
+         categoryPairs.push_back(pair);
+         coOccurrences[pair] = new std::vector<CoOccurrence>;
          if (instances.count(category1) == 0) {
             instances[category1] = new std::unordered_set<std::string>;
             instances[category1]->reserve(8192);
