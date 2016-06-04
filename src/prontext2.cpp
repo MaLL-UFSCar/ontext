@@ -12,11 +12,29 @@
  * argv[3]: SVO file
  */
 
-template <unsigned int N>
 struct CoOccurrenceMatrix {
-   double matrix[N][N];
-   std::string features[N];
+public:
+   double** matrix;
+   std::string* features;
+   unsigned int n;
+
+   ~CoOccurrenceMatrix() {
+      for(unsigned int i = 0; i < n; i++)
+         delete[] matrix[i];
+      delete[] matrix;
+      delete[] features;
+   }
 };
+
+void print_matrix(CoOccurrenceMatrix* m) {
+   for (int i = 0; i < m->n; i++) {
+      for (int j = 0; j < m->n; j++) {
+         std::cout << (m->matrix)[i][j] << '\t';
+      }
+      std::cout << '\n';
+   }
+   std::cout << '\n';
+}
 
 struct hashpair {
    template <class T1, class T2>
@@ -117,16 +135,30 @@ int main (int argc, char** argv) {
    }
 
 
+
    for (const categoryPair &catpair : categoryPairs) {
       std::cout << catpair.first << " <-> " << catpair.second << '\n';
       contextCounter* ccounter = coOccurrences[catpair];
       for (const std::pair<context, counter*> &counters : (*ccounter)) {
-         std::cout << counters.first.first << " and " << counters.first.second << " co-occurs in: \n";
          counter* coun = counters.second;
-         for (const std::pair<std::string, unsigned int> &contexto : (*coun)) {
-            std::cout << contexto.first << ": " << contexto.second << " times\n";
+         unsigned int n = coun->size();
+         CoOccurrenceMatrix m;
+         m.matrix = new double*[n];
+         m.features = new std::string[n];
+         m.n = n;
+         for (unsigned int k = 0; k < n; k++)
+            m.matrix[k] = new double[n];
+         unsigned int i = 0;
+         for (auto it = coun->begin(); it != coun->end(); ++it) {
+            m.features[i++] = it->first;
          }
-         std::cout << "-----------------\n\n";
+         for (unsigned int j = 0; j < n; j++) {
+            i = 0;
+            for (auto it = coun->begin(); it != coun->end(); ++it) {
+               m.matrix[j][i++] = it->second;
+            }
+         }
+         print_matrix(&m);
       }
    }
 }
