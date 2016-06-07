@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <set>
 
 /**
  * argv[1]: Categories file
@@ -27,8 +28,8 @@ public:
 };
 
 void print_matrix(CoOccurrenceMatrix* m) {
-   for (int i = 0; i < m->n; i++) {
-      for (int j = 0; j < m->n; j++) {
+   for (unsigned int i = 0; i < m->n; i++) {
+      for (unsigned int j = 0; j < m->n; j++) {
          std::cout << (m->matrix)[i][j] << '\t';
       }
       std::cout << '\n';
@@ -139,26 +140,35 @@ int main (int argc, char** argv) {
    for (const categoryPair &catpair : categoryPairs) {
       std::cout << catpair.first << " <-> " << catpair.second << '\n';
       contextCounter* ccounter = coOccurrences[catpair];
+
+      std::set<std::string> contextosEncontrados;
+      std::unordered_map<context, unsigned int, hashpair> coocorre;
+
       for (const std::pair<context, counter*> &counters : (*ccounter)) {
-         counter* coun = counters.second;
-         unsigned int n = coun->size();
-         CoOccurrenceMatrix m;
-         m.matrix = new double*[n];
-         m.features = new std::string[n];
-         m.n = n;
-         for (unsigned int k = 0; k < n; k++)
-            m.matrix[k] = new double[n];
-         unsigned int i = 0;
-         for (auto it = coun->begin(); it != coun->end(); ++it) {
-            m.features[i++] = it->first;
-         }
-         for (unsigned int j = 0; j < n; j++) {
-            i = 0;
-            for (auto it = coun->begin(); it != coun->end(); ++it) {
-               m.matrix[j][i++] = it->second;
-            }
-         }
-         print_matrix(&m);
+         contextosEncontrados.insert(counters.first.first);
+         contextosEncontrados.insert(counters.first.second);
+         coocorre[counters.first] += 1;
       }
+
+      size_t n = contextosEncontrados.size();
+      CoOccurrenceMatrix m;
+      m.n = n;
+      m.matrix = new double*[n];
+      m.features = new std::string[n];
+      for (size_t k = 0; k < n; ++k)
+         m.matrix[k] = new double[n];
+
+      size_t i, j;
+      i = 0;
+      for (auto ctx1 : contextosEncontrados) {
+         j = 0;
+         for (auto ctx2 : contextosEncontrados) {
+            m.matrix[i][j++] = coocorre[std::make_pair(ctx1, ctx2)];
+         }
+         ++i;
+      }
+
+      print_matrix(&m);
+      std::cout << '\n';
    }
 }
