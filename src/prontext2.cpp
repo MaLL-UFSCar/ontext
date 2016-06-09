@@ -65,6 +65,52 @@ std::vector<categoryPair> categoryPairs;
 occurrences coOccurrences;
 
 
+/*!
+ * \fn void readCategoriesFile(std::string filename, std::string instanceDir)
+ * \brief Reads the category file (filename) into the global structures
+ * \param filename The category pairs filename
+ * \param instancesDir The path to the instances directory
+ *
+ * The global structures change as follows:
+ *    1. categoryPairs will have all the pairs in the category pairs file
+ *    2. coOccurrences will point each pair to an empty counter
+ *    3. instances will map each category to a list of seeds/instances
+ */
+void readCategoriesFile(std::string filename, std::string instanceDir) {
+   std::ifstream catstream(filename);
+   std::string category1;
+   std::string category2;
+   int categoryid;
+
+   while (catstream >> category1 >> category2 >> categoryid) {
+      auto pair = std::make_pair(category1, category2);
+      categoryPairs.push_back(pair);
+      coOccurrences[pair] = new contextCounter;
+
+      if (instances.count(category1) == 0) {
+         auto newcatset = new std::unordered_set<std::string>;
+         newcatset->reserve(8192);
+         instances[category1] = newcatset;
+         std::ifstream instancestream(instanceDir + category1);
+         std::string seed;
+         while (instancestream >> seed) {
+            newcatset->insert(seed);
+         }
+      }
+
+      if (instances.count(category2) == 0) {
+         auto newcatset = new std::unordered_set<std::string>;
+         newcatset->reserve(8192);
+         instances[category2] = newcatset;
+         std::ifstream instancestream(instanceDir + category2);
+         std::string seed;
+         while (instancestream >> seed) {
+            newcatset->insert(seed);
+         }
+      }
+   }
+}
+
 int main (int argc, char** argv) {
    /*
     * arguments
@@ -74,6 +120,7 @@ int main (int argc, char** argv) {
    std::string svoFilename(argv[3]);
 
    categoryPairs.reserve(256);
+   instanceDir += "/";
 
    /*
     * Section: reading the categories file
@@ -82,37 +129,7 @@ int main (int argc, char** argv) {
     *    2. coOccurrences will point each pair to an empty counter
     *    3. instances map will point each category to a list of seeds/instances
     */
-   std::ifstream categoriesFile(categoryPairsFilename);
-   std::string category1;
-   std::string category2;
-   int categoryid;
-   instanceDir += "/";
-
-   while (categoriesFile >> category1 >> category2 >> categoryid) {
-      auto pair = std::make_pair(category1, category2);
-      categoryPairs.push_back(pair);
-      coOccurrences[pair] = new contextCounter;
-
-      if (instances.count(category1) == 0) {
-         instances[category1] = new std::unordered_set<std::string>;
-         instances[category1]->reserve(8192);
-         std::ifstream instanceFile(instanceDir + category1);
-         std::string seed;
-         while (instanceFile >> seed) {
-            instances[category1]->insert(seed);
-         }
-      }
-      if (instances.count(category2) == 0) {
-         instances[category2] = new std::unordered_set<std::string>;
-         instances[category2]->reserve(8192);
-         std::ifstream instanceFile(instanceDir + category2);
-         std::string seed;
-         while (instanceFile >> seed) {
-            instances[category2]->insert(seed);
-         }
-      }
-   }
-
+   readCategoriesFile(categoryPairsFilename, instanceDir);
 
    /*
     * Section: reading the SVO file
