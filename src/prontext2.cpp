@@ -63,8 +63,6 @@ int main (int argc, char** argv) {
    categoryPairs.reserve(256);
    occurrences coOccurrences;
 
-   std::string scene = "visualizablescene";
-
    {
       std::ifstream categoriesFile(argv[1]);
       std::string category1;
