@@ -57,6 +57,14 @@ using contextCounter = std::unordered_map<context, counter*, hashpair>;
 using occurrences = std::unordered_map<categoryPair, contextCounter*, hashpair>;
 
 
+/*
+ * Global structures
+ */
+std::unordered_map<std::string, std::unordered_set<std::string>* > instances;
+std::vector<categoryPair> categoryPairs;
+occurrences coOccurrences;
+
+
 int main (int argc, char** argv) {
    /*
     * arguments
@@ -64,13 +72,6 @@ int main (int argc, char** argv) {
    std::string categoryPairsFilename(argv[1]);
    std::string instanceDir(argv[2]);
    std::string svoFilename(argv[3]);
-
-   /*
-    * "global" structures
-    */
-   std::unordered_map<std::string, std::unordered_set<std::string>* > instances;
-   std::vector<categoryPair> categoryPairs;
-   occurrences coOccurrences;
 
    categoryPairs.reserve(256);
 
