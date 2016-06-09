@@ -154,7 +154,11 @@ int main (int argc, char** argv) {
    }
 
 
-
+   /*
+    * Section: building the co-occurrence matrices
+    * Output: output every matrix in the screen
+    * TODO: should instead call KMeans on the matrix and output the relations
+    */
    for (const categoryPair &catpair : categoryPairs) {
       std::cout << catpair.first << " <-> " << catpair.second << '\n';
       contextCounter* ccounter = coOccurrences[catpair];
