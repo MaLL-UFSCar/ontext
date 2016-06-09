@@ -112,6 +112,11 @@ int main (int argc, char** argv) {
       }
    }
 
+
+   /*
+    * Section: reading the SVO file
+    * Output: the coOccurrences mapping will be complete
+    */
    std::ifstream svoFile(svoFilename);
    std::string subject;
    std::string verbalPhrase;
