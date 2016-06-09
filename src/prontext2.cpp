@@ -74,6 +74,13 @@ int main (int argc, char** argv) {
 
    categoryPairs.reserve(256);
 
+   /*
+    * Section: reading the categories file
+    * Output:
+    *    1. categoryPairs will have all the pairs in the file
+    *    2. coOccurrences will point each pair to an empty counter
+    *    3. instances map will point each category to a list of seeds/instances
+    */
    std::ifstream categoriesFile(categoryPairsFilename);
    std::string category1;
    std::string category2;
