@@ -58,46 +58,54 @@ using occurrences = std::unordered_map<categoryPair, contextCounter*, hashpair>;
 
 
 int main (int argc, char** argv) {
+   /*
+    * arguments
+    */
+   std::string categoryPairsFilename(argv[1]);
+   std::string instanceDir(argv[2]);
+   std::string svoFilename(argv[3]);
+
+   /*
+    * "global" structures
+    */
    std::unordered_map<std::string, std::unordered_set<std::string>* > instances;
    std::vector<categoryPair> categoryPairs;
-   categoryPairs.reserve(256);
    occurrences coOccurrences;
 
-   {
-      std::ifstream categoriesFile(argv[1]);
-      std::string category1;
-      std::string category2;
-      int categoryid;
-      std::string instanceDir(argv[2]);
-      instanceDir += "/";
+   categoryPairs.reserve(256);
 
-      while (categoriesFile >> category1 >> category2 >> categoryid) {
-         auto pair = std::make_pair(category1, category2);
-         categoryPairs.push_back(pair);
-         coOccurrences[pair] = new contextCounter;
+   std::ifstream categoriesFile(categoryPairsFilename);
+   std::string category1;
+   std::string category2;
+   int categoryid;
+   instanceDir += "/";
 
-         if (instances.count(category1) == 0) {
-            instances[category1] = new std::unordered_set<std::string>;
-            instances[category1]->reserve(8192);
-            std::ifstream instanceFile(instanceDir + category1);
-            std::string seed;
-            while (instanceFile >> seed) {
-               instances[category1]->insert(seed);
-            }
+   while (categoriesFile >> category1 >> category2 >> categoryid) {
+      auto pair = std::make_pair(category1, category2);
+      categoryPairs.push_back(pair);
+      coOccurrences[pair] = new contextCounter;
+
+      if (instances.count(category1) == 0) {
+         instances[category1] = new std::unordered_set<std::string>;
+         instances[category1]->reserve(8192);
+         std::ifstream instanceFile(instanceDir + category1);
+         std::string seed;
+         while (instanceFile >> seed) {
+            instances[category1]->insert(seed);
          }
-         if (instances.count(category2) == 0) {
-            instances[category2] = new std::unordered_set<std::string>;
-            instances[category2]->reserve(8192);
-            std::ifstream instanceFile(instanceDir + category2);
-            std::string seed;
-            while (instanceFile >> seed) {
-               instances[category2]->insert(seed);
-            }
+      }
+      if (instances.count(category2) == 0) {
+         instances[category2] = new std::unordered_set<std::string>;
+         instances[category2]->reserve(8192);
+         std::ifstream instanceFile(instanceDir + category2);
+         std::string seed;
+         while (instanceFile >> seed) {
+            instances[category2]->insert(seed);
          }
       }
    }
 
-   std::ifstream svoFile(argv[3]);
+   std::ifstream svoFile(svoFilename);
    std::string subject;
    std::string verbalPhrase;
    std::string object;
