@@ -111,6 +111,53 @@ void readCategoriesFile(std::string filename, std::string instanceDir) {
    }
 }
 
+
+/*!
+ * \fn void readSvoFile(std::string filename)
+ * \brief Reads the SVO file (filename) into global coOccurrences
+ * \param filename Path to SVO file
+ *
+ * The coOccurrences mapping will be complete, meaning the full indexing
+ * of it will return the count of those objects.
+ */
+void readSvoFile(std::string filename) {
+   std::ifstream svostream(filename);
+   std::string subject;
+   std::string verbalphrase;
+   std::string object;
+   std::string countstr;
+   int count;
+
+   while (svostream.peek() != std::char_traits<char>::eof()) {
+      std::getline(svostream, subject, '\t');
+      std::getline(svostream, verbalphrase, '\t');
+      std::getline(svostream, object, '\t');
+      std::getline(svostream, countstr);
+
+      for (const auto &pair : categoryPairs) {
+         if (instances[pair.first]->count(subject) > 0
+               && instances[pair.second]->count(object) > 0) {
+            count = std::stoi(countstr);
+            context so = std::make_pair(subject, object);
+            contextCounter* c = coOccurrences[pair];
+            if (c->count(so) == 0) {
+               (*c)[so] = new counter;
+            }
+            (*((*c)[so]))[verbalphrase] += count;
+         } else if (instances[pair.second]->count(subject) > 0
+               && instances[pair.first]->count(object) > 0) {
+            count = std::stoi(countstr);
+            context so = std::make_pair(subject, object);
+            contextCounter* c = coOccurrences[pair];
+            if (c->count(so) == 0) {
+               (*c)[so] = new counter;
+            }
+            (*((*c)[so]))[verbalphrase] += count;
+         }
+      }
+   }
+}
+
 int main (int argc, char** argv) {
    /*
     * arguments
@@ -135,41 +182,7 @@ int main (int argc, char** argv) {
     * Section: reading the SVO file
     * Output: the coOccurrences mapping will be complete
     */
-   std::ifstream svoFile(svoFilename);
-   std::string subject;
-   std::string verbalPhrase;
-   std::string object;
-   std::string countStr;
-   int count;
-
-   while (svoFile.peek() != std::char_traits<char>::eof()) {
-      std::getline(svoFile, subject, '\t');
-      std::getline(svoFile, verbalPhrase, '\t');
-      std::getline(svoFile, object, '\t');
-      std::getline(svoFile, countStr);
-
-      for (const auto &pair : categoryPairs) {
-         if (instances[pair.first]->count(subject) > 0
-               && instances[pair.second]->count(object) > 0) {
-            count = std::stoi(countStr);
-            context so = std::make_pair(subject, object);
-            contextCounter* c = coOccurrences[pair];
-            if (c->count(so) == 0) {
-               (*c)[so] = new counter;
-            }
-            (*((*c)[so]))[verbalPhrase] += count;
-         } else if (instances[pair.second]->count(subject) > 0
-               && instances[pair.first]->count(object) > 0) {
-            count = std::stoi(countStr);
-            context so = std::make_pair(subject, object);
-            contextCounter* c = coOccurrences[pair];
-            if (c->count(so) == 0) {
-               (*c)[so] = new counter;
-            }
-            (*((*c)[so]))[verbalPhrase] += count;
-         }
-      }
-   }
+   readSvoFile(svoFilename);
 
 
    /*
