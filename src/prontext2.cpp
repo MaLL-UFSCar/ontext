@@ -169,19 +169,7 @@ int main (int argc, char** argv) {
    categoryPairs.reserve(256);
    instanceDir += "/";
 
-   /*
-    * Section: reading the categories file
-    * Output:
-    *    1. categoryPairs will have all the pairs in the file
-    *    2. coOccurrences will point each pair to an empty counter
-    *    3. instances map will point each category to a list of seeds/instances
-    */
    readCategoriesFile(categoryPairsFilename, instanceDir);
-
-   /*
-    * Section: reading the SVO file
-    * Output: the coOccurrences mapping will be complete
-    */
    readSvoFile(svoFilename);
 
 
