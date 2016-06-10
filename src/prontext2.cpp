@@ -23,7 +23,11 @@
  * argv[3]: SVO file
  */
 
-struct CoOccurrenceMatrix {
+/*!
+ * \class CoOccurrenceMatrix
+ * \brief Main structure for the OntExt algorithm
+ */
+class CoOccurrenceMatrix {
 private:
    double** matrix;
    std::string* features;
@@ -47,26 +51,50 @@ public:
       delete[] features;
    }
 
+   /*!
+    * \fn size_t getN() const
+    * \brief Gets the size of the matrix
+    */
    size_t getN() const {
       return n;
    }
 
+   /*!
+    * \fn void setValue(size_t row, size_t column, double value)
+    * \brief Sets the matrix value at [row, column], indexing 0-based
+    */
    void setValue(const size_t row, const size_t column, const double value) {
       matrix[row][column] = value;
    }
 
+   /*!
+    * \fn double getValue(size_t row, size_t column) const
+    * \brief Gets the matrix value at [row, column], indexing 0-based
+    */
    double getValue(size_t row, size_t column) const {
       return matrix[row][column];
    }
 
+   /*!
+    * \fn void setName(size_t order, std::string value)
+    * \briefs Sets the feature name at position order
+    */
    void setName(size_t order, std::string value) {
       features[order] = value;
    }
 
+   /*!
+    * \fn std::string getName(size_t order) const
+    * \brief Gets the feature name at position order
+    */
    std::string getName(size_t order) const {
       return features[order];
    }
 
+   /*!
+    * \fn void print()
+    * \brief Prints the matrix - debug only
+    */
    void print() {
       for (size_t y = 0; y < getN(); ++y) {
          for (size_t x = 0; x < getN(); ++x) {
