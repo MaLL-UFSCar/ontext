@@ -158,6 +158,50 @@ void readSvoFile(std::string filename) {
    }
 }
 
+
+/*!
+ * \fn void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices)
+ * \brief Builds the co-occurrence matrices
+ * \param matrices Vector with the matrices stored
+ */
+void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
+   matrices->reserve(categoryPairs.size());
+
+   for (const categoryPair &catpair : categoryPairs) {
+      contextCounter* ccounter = coOccurrences[catpair];
+      std::set<std::string> foundContexts;
+      std::unordered_map<context, unsigned int, hashpair> cooccurring;
+
+      for (const std::pair<context, counter*> &counters : (*ccounter)) {
+         foundContexts.insert(counters.first.first);
+         foundContexts.insert(counters.first.second);
+         cooccurring[counters.first] += 1;
+      }
+
+      size_t n = foundContexts.size();
+      CoOccurrenceMatrix* m = new CoOccurrenceMatrix;
+      m->n = n;
+      m->matrix = new double*[n];
+      m->features = new std::string[n];
+      for (size_t k = 0; k < n; ++k) {
+         m->matrix[k] = new double[n];
+      }
+
+      size_t i, j;
+      i = 0;
+      for (auto ctx1 : foundContexts) {
+         j = 0;
+         for (auto ctx2 : foundContexts) {
+            m->matrix[i][j] = cooccurring[std::make_pair(ctx1, ctx2)];
+            ++j;
+         }
+         ++i;
+      }
+      matrices->push_back(m);
+   }
+}
+
+
 int main (int argc, char** argv) {
    /*
     * arguments
@@ -171,45 +215,15 @@ int main (int argc, char** argv) {
 
    readCategoriesFile(categoryPairsFilename, instanceDir);
    readSvoFile(svoFilename);
+   
+   std::vector<CoOccurrenceMatrix*> matrices;
+   buildMatrices(&matrices);
 
-
-   /*
-    * Section: building the co-occurrence matrices
-    * Output: output every matrix in the screen
-    * TODO: should instead call KMeans on the matrix and output the relations
-    */
-   for (const categoryPair &catpair : categoryPairs) {
-      std::cout << catpair.first << " <-> " << catpair.second << '\n';
-      contextCounter* ccounter = coOccurrences[catpair];
-
-      std::set<std::string> contextosEncontrados;
-      std::unordered_map<context, unsigned int, hashpair> coocorre;
-
-      for (const std::pair<context, counter*> &counters : (*ccounter)) {
-         contextosEncontrados.insert(counters.first.first);
-         contextosEncontrados.insert(counters.first.second);
-         coocorre[counters.first] += 1;
-      }
-
-      size_t n = contextosEncontrados.size();
-      CoOccurrenceMatrix m;
-      m.n = n;
-      m.matrix = new double*[n];
-      m.features = new std::string[n];
-      for (size_t k = 0; k < n; ++k)
-         m.matrix[k] = new double[n];
-
-      size_t i, j;
-      i = 0;
-      for (auto ctx1 : contextosEncontrados) {
-         j = 0;
-         for (auto ctx2 : contextosEncontrados) {
-            m.matrix[i][j++] = coocorre[std::make_pair(ctx1, ctx2)];
-         }
-         ++i;
-      }
-
-      print_matrix(&m);
+   // TODO: instead of printing the matrix,
+   // should call KMeans on each matrix and output the relations
+   for (auto m : matrices) {
+      print_matrix(m);
       std::cout << '\n';
    }
+
 }
