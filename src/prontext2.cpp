@@ -212,10 +212,11 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
 
       size_t n = foundContexts.size();
       CoOccurrenceMatrix* m = new CoOccurrenceMatrix(n);
-      
+
       size_t i, j;
       i = 0;
       for (auto ctx1 : foundContexts) {
+         m->setName(i, ctx1);
          j = 0;
          for (auto ctx2 : foundContexts) {
             m->setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
