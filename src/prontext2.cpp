@@ -14,28 +14,60 @@
  */
 
 struct CoOccurrenceMatrix {
-public:
+private:
    double** matrix;
    std::string* features;
-   unsigned int n;
+   size_t n;
+
+public:
+
+   CoOccurrenceMatrix(size_t size) : n(size) {
+      matrix = new double*[size];
+      features = new std::string[size];
+      for (size_t i = 0; i < n; i++) {
+         matrix[i] = new double[size];
+      }
+   }
 
    ~CoOccurrenceMatrix() {
-      for(unsigned int i = 0; i < n; i++)
+      for(size_t i = 0; i < n; i++) {
          delete[] matrix[i];
+      }
       delete[] matrix;
       delete[] features;
    }
-};
 
-void print_matrix(CoOccurrenceMatrix* m) {
-   for (unsigned int i = 0; i < m->n; i++) {
-      for (unsigned int j = 0; j < m->n; j++) {
-         std::cout << (m->matrix)[i][j] << '\t';
+   size_t getN() const {
+      return n;
+   }
+
+   void setValue(const size_t row, const size_t column, const double value) {
+      matrix[row][column] = value;
+   }
+
+   double getValue(size_t row, size_t column) const {
+      return matrix[row][column];
+   }
+
+   void setName(size_t order, std::string value) {
+      features[order] = value;
+   }
+
+   std::string getName(size_t order) const {
+      return features[order];
+   }
+
+   void print() {
+      for (size_t y = 0; y < getN(); ++y) {
+         for (size_t x = 0; x < getN(); ++x) {
+            std::cout << getValue(y, x) << '\t';
+         }
+         std::cout << '\n';
       }
       std::cout << '\n';
    }
-   std::cout << '\n';
-}
+};
+
 
 struct hashpair {
    template <class T1, class T2>
@@ -179,20 +211,14 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
       }
 
       size_t n = foundContexts.size();
-      CoOccurrenceMatrix* m = new CoOccurrenceMatrix;
-      m->n = n;
-      m->matrix = new double*[n];
-      m->features = new std::string[n];
-      for (size_t k = 0; k < n; ++k) {
-         m->matrix[k] = new double[n];
-      }
-
+      CoOccurrenceMatrix* m = new CoOccurrenceMatrix(n);
+      
       size_t i, j;
       i = 0;
       for (auto ctx1 : foundContexts) {
          j = 0;
          for (auto ctx2 : foundContexts) {
-            m->matrix[i][j] = cooccurring[std::make_pair(ctx1, ctx2)];
+            m->setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
             ++j;
          }
          ++i;
@@ -222,7 +248,7 @@ int main (int argc, char** argv) {
    // TODO: instead of printing the matrix,
    // should call KMeans on each matrix and output the relations
    for (auto m : matrices) {
-      print_matrix(m);
+      m->print();
       std::cout << '\n';
    }
 
