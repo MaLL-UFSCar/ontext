@@ -1,3 +1,12 @@
+/*!
+ * \file       prontext2.cpp
+ * \brief      OntExt implementation linked to Prophet
+ * \author     Diorge Brognara
+ * \date       2016
+ * \copyright  Copyright (C) Diorge Brognara 2016. All rights MIT Licensed.
+ */
+
+
 #include <iostream>
 #include <fstream>
 #include <unordered_set>
@@ -6,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include <set>
+
 
 /**
  * argv[1]: Categories file
