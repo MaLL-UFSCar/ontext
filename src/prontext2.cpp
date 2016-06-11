@@ -107,6 +107,11 @@ public:
 };
 
 
+/*!
+ * \struct hashpair
+ * \brief Provides a hash-function for std::pair as its operator()
+ * Follows Python's implementation for hashing tuples
+ */
 struct hashpair {
    template <class T1, class T2>
    std::size_t operator () (const std::pair<T1, T2> &p) const {
