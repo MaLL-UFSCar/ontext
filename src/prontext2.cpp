@@ -107,6 +107,13 @@ public:
  * Follows Python's implementation for hashing tuples
  */
 struct hashpair {
+   /*!
+    * \fn operator() (const std::pair<T1, T2> &p) const
+    * \brief Hash implementation for std::pair, mirroring Python's tuples
+    * \tparam T1 First type of the pair
+    * \tparam T2 Second type of the pair
+    * \param p Pair to be hashed
+    */
    template <class T1, class T2>
    std::size_t operator () (const std::pair<T1, T2> &p) const {
       auto value = 0x345678;
