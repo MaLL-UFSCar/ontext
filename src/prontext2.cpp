@@ -71,7 +71,7 @@ public:
 
    /*!
     * \fn void setName(size_t order, std::string value)
-    * \briefs Sets the feature name at position order
+    * \brief Sets the feature name at position order
     */
    void setName(size_t order, std::string value) {
       features[order] = value;
@@ -135,17 +135,19 @@ occurrences coOccurrences;
 
 
 /*!
- * \fn void readCategoriesFile(std::string filename, std::string instanceDir)
+ * \fn void readCategoriesFile(const std::string &filename,
+ * const std::string &instanceDir)
  * \brief Reads the category file (filename) into the global structures
  * \param filename The category pairs filename
- * \param instancesDir The path to the instances directory
+ * \param instanceDir The path to the instances directory
  *
  * The global structures change as follows:
  *    1. categoryPairs will have all the pairs in the category pairs file
  *    2. coOccurrences will point each pair to an empty counter
  *    3. instances will map each category to a list of seeds/instances
  */
-void readCategoriesFile(std::string filename, std::string instanceDir) {
+void readCategoriesFile(const std::string &filename,
+                        const std::string &instanceDir) {
    std::ifstream catstream(filename);
    std::string category1;
    std::string category2;
@@ -182,14 +184,14 @@ void readCategoriesFile(std::string filename, std::string instanceDir) {
 
 
 /*!
- * \fn void readSvoFile(std::string filename)
+ * \fn void readSvoFile(const std::string &filename)
  * \brief Reads the SVO file (filename) into global coOccurrences
  * \param filename Path to SVO file
  *
  * The coOccurrences mapping will be complete, meaning the full indexing
  * of it will return the count of those objects.
  */
-void readSvoFile(std::string filename) {
+void readSvoFile(const std::string &filename) {
    std::ifstream svostream(filename);
    std::string subject;
    std::string verbalphrase;
