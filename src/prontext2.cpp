@@ -247,8 +247,8 @@ void readSvoFile(const std::string &filename) {
  * \brief Builds the co-occurrence matrices
  * \param matrices Vector with the matrices stored
  */
-void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
-   matrices->reserve(categoryPairs.size());
+void buildMatrices(std::vector<CoOccurrenceMatrix*> &matrices) {
+   matrices.reserve(categoryPairs.size());
 
    for (const categoryPair &catpair : categoryPairs) {
       contextCounter* ccounter = coOccurrences[catpair];
@@ -275,7 +275,7 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
          }
          ++i;
       }
-      matrices->push_back(m);
+      matrices.push_back(m);
    }
 }
 
@@ -303,7 +303,7 @@ int main (int argc, char** argv) {
    readSvoFile(svoFilename);
    
    std::vector<CoOccurrenceMatrix*> matrices;
-   buildMatrices(&matrices);
+   buildMatrices(matrices);
 
    // TODO: instead of printing the matrix,
    // should call KMeans on each matrix and output the relations
