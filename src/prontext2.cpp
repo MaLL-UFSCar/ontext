@@ -17,12 +17,6 @@
 #include <set>
 
 
-/**
- * argv[1]: Categories file
- * argv[2]: Instances directory
- * argv[3]: SVO file
- */
-
 /*!
  * \class CoOccurrenceMatrix
  * \brief Main structure for the OntExt algorithm
@@ -272,6 +266,14 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices) {
 }
 
 
+/*!
+ * \fn int main(int argc, char** argv)
+ * \brief Ontext entry point
+ *
+ * argv[1]: Categories file
+ * argv[2]: Instances directory
+ * argv[3]: SVO file
+ */
 int main (int argc, char** argv) {
    /*
     * arguments
