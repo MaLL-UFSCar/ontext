@@ -29,6 +29,11 @@ private:
 
 public:
 
+   /*!
+    * \fn CoOccurrenceMatrix(size_t size)
+    * \param size Size of the matrix
+    * \brief Creates a size X size co-occurrence matrix
+    */
    CoOccurrenceMatrix(size_t size) : n(size) {
       matrix = new double*[size];
       features = new std::string[size];
