@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include <set>
+#include <memory>
 
 
 /*!
@@ -23,9 +24,9 @@
  */
 class CoOccurrenceMatrix {
 private:
-   double** matrix;
-   std::string* features;
    size_t n;
+   std::vector<std::vector<double> > matrix;
+   std::string* features;
 
 public:
 
@@ -34,19 +35,11 @@ public:
     * \param size Size of the matrix
     * \brief Creates a size X size co-occurrence matrix
     */
-   CoOccurrenceMatrix(size_t size) : n(size) {
-      matrix = new double*[size];
+   CoOccurrenceMatrix(size_t size) : n(size), matrix(size, std::vector<double>(size)) {
       features = new std::string[size];
-      for (size_t i = 0; i < n; i++) {
-         matrix[i] = new double[size];
-      }
    }
 
    ~CoOccurrenceMatrix() {
-      for(size_t i = 0; i < n; i++) {
-         delete[] matrix[i];
-      }
-      delete[] matrix;
       delete[] features;
    }
 
@@ -276,9 +269,9 @@ void readSvoFile(const std::string &filename) {
  * \brief Builds the co-occurrence matrices
  * \param matrices Vector with the matrices stored
  */
-void buildMatrices(std::vector<CoOccurrenceMatrix*> &matrices) {
+CoOccurrenceMatrix** buildMatrices() {
    size_t size = categoryPairs.size();
-   matrices.reserve(size);
+   CoOccurrenceMatrix** matrices = new CoOccurrenceMatrix*[size];
 
    #pragma omp parallel for
    for (size_t it = 0; it < size; ++it) {
@@ -309,6 +302,7 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*> &matrices) {
       }
       matrices[it] = m;
    }
+   return matrices;
 }
 
 
@@ -334,14 +328,12 @@ int main (int argc, char** argv) {
    readCategoriesFile(categoryPairsFilename, instanceDir);
    readSvoFile(svoFilename);
    
-   std::vector<CoOccurrenceMatrix*> matrices;
-   buildMatrices(matrices);
+   auto matrices = buildMatrices();
 
    // TODO: instead of printing the matrix,
    // should call KMeans on each matrix and output the relations
-   for (auto m : matrices) {
-      m->print();
+   for (size_t i = 0; i < categoryPairs.size(); ++i) {
+      matrices[i]->print();
       std::cout << '\n';
    }
-
 }
