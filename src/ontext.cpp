@@ -121,187 +121,228 @@ struct hashpair {
 };
 
 
-using categoryPair = std::pair<std::string, std::string>;
-using context = std::pair<std::string, std::string>;
-using counter = std::unordered_map<std::string, unsigned int>;
-using contextCounter = std::unordered_map<context, counter*, hashpair>;
-using occurrences = std::unordered_map<categoryPair, contextCounter*, hashpair>;
-
-
-/*
- * Global structures
- */
-std::unordered_map<std::string, std::unordered_set<std::string>* > instances;
-std::vector<categoryPair> categoryPairs;
-occurrences coOccurrences;
-
-
 /*!
- * \fn void readCategoriesFile(const std::string &filename,
- * const std::string &instanceDir)
- * \brief Reads the category file (filename) into the global structures
- * \param filename The category pairs filename
- * \param instanceDir The path to the instances directory
- *
- * The global structures change as follows:
- *    1. categoryPairs will have all the pairs in the category pairs file
- *    2. coOccurrences will point each pair to an empty counter
- *    3. instances will map each category to a list of seeds/instances
+ * \class OntExt
+ * \brief Implementation of the OntExt algorithm
  */
-void readCategoriesFile(const std::string &filename,
-                        const std::string &instanceDir) {
-   std::ifstream catstream(filename);
-   std::string category1;
-   std::string category2;
-   int categoryid;
+class OntExt {
+private:
+   template<class TKey, class TValue, class THash=std::hash<TKey> >
+   using map = std::unordered_map<TKey, TValue, THash>;
 
-   while (catstream >> category1 >> category2 >> categoryid) {
-      auto pair = std::make_pair(category1, category2);
-      categoryPairs.push_back(pair);
-      coOccurrences[pair] = new contextCounter;
+   using categoryPair = std::pair<std::string, std::string>;
+   using context = std::pair<std::string, std::string>;
+   using counter = map<std::string, unsigned int>;
+   using contextCounter = map<context, counter*, hashpair>;
+   using occurrences = map<categoryPair, contextCounter*, hashpair>;
 
-      if (instances.count(category1) == 0) {
-         auto newcatset = new std::unordered_set<std::string>;
-         newcatset->reserve(8192);
-         instances[category1] = newcatset;
-         std::ifstream instancestream(instanceDir + category1);
-         std::string seed;
-         while (instancestream >> seed) {
-            newcatset->insert(seed);
+
+   map<std::string, std::unordered_set<std::string>* > instances;
+   std::vector<categoryPair> categoryPairs;
+   occurrences coOccurrences;
+
+   std::string categoriesFilename;
+   std::string instancesDirectoryName;
+   std::string svoFilename;
+
+   /*!
+   * \fn void readCategoriesFile()
+   * \brief Reads the category file (filename) into the global structures
+   *
+   * The global structures change as follows:
+   *    1. categoryPairs will have all the pairs in the category pairs file
+   *    2. coOccurrences will point each pair to an empty counter
+   *    3. instances will map each category to a list of seeds/instances
+   */
+   void readCategoriesFile() {
+      std::ifstream catstream(categoriesFilename);
+      std::string category1;
+      std::string category2;
+      int categoryid;
+
+      while (catstream >> category1 >> category2 >> categoryid) {
+         auto pair = std::make_pair(category1, category2);
+         categoryPairs.push_back(pair);
+         coOccurrences[pair] = new contextCounter;
+
+         if (instances.count(category1) == 0) {
+            auto newcatset = new std::unordered_set<std::string>;
+            newcatset->reserve(8192);
+            instances[category1] = newcatset;
+            std::ifstream instancestream(instancesDirectoryName + category1);
+            std::string seed;
+            while (instancestream >> seed) {
+               newcatset->insert(seed);
+            }
          }
-      }
 
-      if (instances.count(category2) == 0) {
-         auto newcatset = new std::unordered_set<std::string>;
-         newcatset->reserve(8192);
-         instances[category2] = newcatset;
-         std::ifstream instancestream(instanceDir + category2);
-         std::string seed;
-         while (instancestream >> seed) {
-            newcatset->insert(seed);
+         if (instances.count(category2) == 0) {
+            auto newcatset = new std::unordered_set<std::string>;
+            newcatset->reserve(8192);
+            instances[category2] = newcatset;
+            std::ifstream instancestream(instancesDirectoryName + category2);
+            std::string seed;
+            while (instancestream >> seed) {
+               newcatset->insert(seed);
+            }
          }
       }
    }
-}
 
 
-/*!
- * \fn void readSvoFile(const std::string &filename)
- * \brief Reads the SVO file (filename) into global coOccurrences
- * \param filename Path to SVO file
- *
- * The coOccurrences mapping will be complete, meaning the full indexing
- * of it will return the count of those objects.
- */
-void readSvoFile(const std::string &filename) {
-   std::ifstream svostream(filename);
+   /*!
+   * \fn void readSvoFile()
+   * \brief Reads the SVO file (filename) into global coOccurrences
+   *
+   * The coOccurrences mapping will be complete, meaning the full indexing
+   * of it will return the count of those objects.
+   */
+   void readSvoFile() {
+      std::ifstream svostream(svoFilename);
 
-   struct svorow {
-      std::string s;
-      std::string v;
-      std::string o;
-      std::string nstr;
-   };
+      struct svorow {
+         std::string s;
+         std::string v;
+         std::string o;
+         std::string nstr;
+      };
 
-   std::vector<svorow*> rows;
-   rows.reserve((size_t)1 << 25);
-   while (svostream.peek() != std::char_traits<char>::eof()) {
-      auto r = new svorow;
-      std::getline(svostream, r->s, '\t');
-      std::getline(svostream, r->v, '\t');
-      std::getline(svostream, r->o, '\t');
-      std::getline(svostream, r->nstr);
-      rows.push_back(r);
+      std::vector<svorow*> rows;
+      rows.reserve((size_t)1 << 25);
+      while (svostream.peek() != std::char_traits<char>::eof()) {
+         auto r = new svorow;
+         std::getline(svostream, r->s, '\t');
+         std::getline(svostream, r->v, '\t');
+         std::getline(svostream, r->o, '\t');
+         std::getline(svostream, r->nstr);
+         rows.push_back(r);
+      }
+      svostream.close();
+      
+      #ifndef INNER_PARALLEL
+      #define INNER_PARALLEL false
+      #endif
+
+      #pragma omp parallel for
+      for (size_t it1 = 0; it1 < rows.size(); ++it1) {
+         auto &row = *rows[it1];
+         size_t size = categoryPairs.size();
+         #pragma omp parallel for if(INNER_PARALLEL)
+         for (size_t it = 0; it < size; ++it) {
+            auto &pair = categoryPairs[it];
+            if (instances[pair.first]->count(row.s) > 0
+                  && instances[pair.second]->count(row.o) > 0) {
+               int count = std::stoi(row.nstr);
+               context so = std::make_pair(row.s, row.o);
+               contextCounter* c = coOccurrences[pair];
+               #pragma omp critical (foundpair)
+               {
+                  if (c->count(so) == 0) {
+                     (*c)[so] = new counter;
+                  }
+                  (*((*c)[so]))[row.v] += count;
+               }
+            } else if (instances[pair.second]->count(row.s) > 0
+                  && instances[pair.first]->count(row.o) > 0) {
+               int count = std::stoi(row.nstr);
+               context so = std::make_pair(row.s, row.o);
+               contextCounter* c = coOccurrences[pair];
+               #pragma omp critical (foundpair)
+               {
+                  if (c->count(so) == 0) {
+                     (*c)[so] = new counter;
+                  }
+                  (*((*c)[so]))[row.v] += count;
+               }
+            }
+         }
+      }
+
+      for(size_t it = 0; it < rows.size(); ++it) {
+         delete rows[it];
+      }
+
    }
-   svostream.close();
-   
-   #ifndef INNER_PARALLEL
-   #define INNER_PARALLEL false
-   #endif
 
-   #pragma omp parallel for
-   for (size_t it1 = 0; it1 < rows.size(); ++it1) {
-      auto &row = *rows[it1];
+
+   /*!
+   * \fn std::vector<CoOccurrenceMatrix> buildMatrices()
+   * \brief Builds the co-occurrence matrices
+   */
+   std::vector<CoOccurrenceMatrix> buildMatrices() {
       size_t size = categoryPairs.size();
-      #pragma omp parallel for if(INNER_PARALLEL)
+      std::vector<CoOccurrenceMatrix> vec(size, CoOccurrenceMatrix(0));
+
+      #pragma omp parallel for
       for (size_t it = 0; it < size; ++it) {
-         auto &pair = categoryPairs[it];
-         if (instances[pair.first]->count(row.s) > 0
-               && instances[pair.second]->count(row.o) > 0) {
-            int count = std::stoi(row.nstr);
-            context so = std::make_pair(row.s, row.o);
-            contextCounter* c = coOccurrences[pair];
-            #pragma omp critical (foundpair)
-            {
-               if (c->count(so) == 0) {
-                  (*c)[so] = new counter;
-               }
-               (*((*c)[so]))[row.v] += count;
-            }
-         } else if (instances[pair.second]->count(row.s) > 0
-               && instances[pair.first]->count(row.o) > 0) {
-            int count = std::stoi(row.nstr);
-            context so = std::make_pair(row.s, row.o);
-            contextCounter* c = coOccurrences[pair];
-            #pragma omp critical (foundpair)
-            {
-               if (c->count(so) == 0) {
-                  (*c)[so] = new counter;
-               }
-               (*((*c)[so]))[row.v] += count;
-            }
+         const auto &catpair = categoryPairs[it];
+         contextCounter* ccounter = coOccurrences[catpair];
+         std::set<std::string> foundContexts;
+         std::unordered_map<context, unsigned int, hashpair> cooccurring;
+
+         for (const std::pair<context, counter*> &counters : (*ccounter)) {
+            foundContexts.insert(counters.first.first);
+            foundContexts.insert(counters.first.second);
+            cooccurring[counters.first] += 1;
          }
-      }
-   }
 
-   for(size_t it = 0; it < rows.size(); ++it) {
-      delete rows[it];
-   }
+         size_t n = foundContexts.size();
+         CoOccurrenceMatrix m(n);
 
-}
-
-
-/*!
- * \fn void buildMatrices(std::vector<CoOccurrenceMatrix*>* matrices)
- * \brief Builds the co-occurrence matrices
- * \param matrices Vector with the matrices stored
- */
-std::vector<CoOccurrenceMatrix> buildMatrices() {
-   size_t size = categoryPairs.size();
-   std::vector<CoOccurrenceMatrix> vec(size, CoOccurrenceMatrix(0));
-
-   #pragma omp parallel for
-   for (size_t it = 0; it < size; ++it) {
-      const auto &catpair = categoryPairs[it];
-      contextCounter* ccounter = coOccurrences[catpair];
-      std::set<std::string> foundContexts;
-      std::unordered_map<context, unsigned int, hashpair> cooccurring;
-
-      for (const std::pair<context, counter*> &counters : (*ccounter)) {
-         foundContexts.insert(counters.first.first);
-         foundContexts.insert(counters.first.second);
-         cooccurring[counters.first] += 1;
-      }
-
-      size_t n = foundContexts.size();
-      CoOccurrenceMatrix m(n);
-
-      size_t i, j;
-      i = 0;
-      for (auto ctx1 : foundContexts) {
-         // TODO: bug. the name is being set to the subject, not verbal phrase
-         m.setName(i, ctx1);
-         j = 0;
-         for (auto ctx2 : foundContexts) {
-            m.setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
-            ++j;
+         size_t i, j;
+         i = 0;
+         for (auto ctx1 : foundContexts) {
+            // TODO: bug. the name is being set to the subject, not verbal phrase
+            m.setName(i, ctx1);
+            j = 0;
+            for (auto ctx2 : foundContexts) {
+               m.setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
+               ++j;
+            }
+            ++i;
          }
-         ++i;
+         vec[it] = m;
       }
-      vec[it] = m;
+      return vec;
    }
-   return vec;
-}
+
+public:
+
+   /*!
+    * \fn OntExt(std::string categoriesFile, std::string instancesDirectory,
+    * std::string svoFile)
+    * \brief Set-up an OntExt execution with the given inputs
+    */
+   OntExt(std::string categoriesFile,
+         std::string instancesDirectory,
+         std::string svoFile) :
+      categoriesFilename(categoriesFile),
+      instancesDirectoryName(instancesDirectory),
+      svoFilename(svoFile) {
+
+      categoryPairs.reserve(256);
+   }
+
+
+   void run() {
+      readCategoriesFile();
+      readSvoFile();
+      auto matrices = buildMatrices();
+
+      // TODO: instead of printing the matrix,
+      // should call KMeans on each matrix and output the relations
+      for (size_t i = 0; i < categoryPairs.size(); ++i) {
+         for (size_t j = 0; j < matrices[i].getN(); ++j) {
+            std::cout << matrices[i].getName(j) << '\t';
+         }
+         std::cout << '\n';
+         matrices[i].print();
+         std::cout << '\n';
+      }
+   }
+
+
+};
 
 
 /*!
@@ -320,22 +361,6 @@ int main (int argc, char** argv) {
    std::string instanceDir(argv[2]);
    std::string svoFilename(argv[3]);
 
-   categoryPairs.reserve(256);
-   instanceDir += "/";
-
-   readCategoriesFile(categoryPairsFilename, instanceDir);
-   readSvoFile(svoFilename);
-   
-   auto matrices = buildMatrices();
-
-   // TODO: instead of printing the matrix,
-   // should call KMeans on each matrix and output the relations
-   for (size_t i = 0; i < categoryPairs.size(); ++i) {
-      for (size_t j = 0; j < matrices[i].getN(); ++j) {
-         std::cout << matrices[i].getName(j) << '\t';
-      }
-      std::cout << '\n';
-      matrices[i].print();
-      std::cout << '\n';
-   }
+   OntExt algo(categoryPairsFilename, instanceDir + "/", svoFilename);
+   algo.run();
 }
