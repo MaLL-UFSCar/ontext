@@ -257,9 +257,12 @@ void readSvoFile(const std::string &filename) {
  * \param matrices Vector with the matrices stored
  */
 void buildMatrices(std::vector<CoOccurrenceMatrix*> &matrices) {
-   matrices.reserve(categoryPairs.size());
+   size_t size = categoryPairs.size();
+   matrices.reserve(size);
 
-   for (const categoryPair &catpair : categoryPairs) {
+   #pragma omp parallel for
+   for (size_t it = 0; it < size; ++it) {
+      const auto &catpair = categoryPairs[it];
       contextCounter* ccounter = coOccurrences[catpair];
       std::set<std::string> foundContexts;
       std::unordered_map<context, unsigned int, hashpair> cooccurring;
@@ -284,7 +287,7 @@ void buildMatrices(std::vector<CoOccurrenceMatrix*> &matrices) {
          }
          ++i;
       }
-      matrices.push_back(m);
+      matrices[it] = m;
    }
 }
 
