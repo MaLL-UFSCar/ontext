@@ -266,9 +266,9 @@ void readSvoFile(const std::string &filename) {
  * \brief Builds the co-occurrence matrices
  * \param matrices Vector with the matrices stored
  */
-CoOccurrenceMatrix** buildMatrices() {
+std::vector<CoOccurrenceMatrix> buildMatrices() {
    size_t size = categoryPairs.size();
-   CoOccurrenceMatrix** matrices = new CoOccurrenceMatrix*[size];
+   std::vector<CoOccurrenceMatrix> vec(size, CoOccurrenceMatrix(0));
 
    #pragma omp parallel for
    for (size_t it = 0; it < size; ++it) {
@@ -284,23 +284,23 @@ CoOccurrenceMatrix** buildMatrices() {
       }
 
       size_t n = foundContexts.size();
-      CoOccurrenceMatrix* m = new CoOccurrenceMatrix(n);
+      CoOccurrenceMatrix m(n);
 
       size_t i, j;
       i = 0;
       for (auto ctx1 : foundContexts) {
          // TODO: bug. the name is being set to the subject, not verbal phrase
-         m->setName(i, ctx1);
+         m.setName(i, ctx1);
          j = 0;
          for (auto ctx2 : foundContexts) {
-            m->setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
+            m.setValue(i, j, cooccurring[std::make_pair(ctx1, ctx2)]);
             ++j;
          }
          ++i;
       }
-      matrices[it] = m;
+      vec[it] = std::move(m);
    }
-   return matrices;
+   return vec;
 }
 
 
@@ -331,11 +331,11 @@ int main (int argc, char** argv) {
    // TODO: instead of printing the matrix,
    // should call KMeans on each matrix and output the relations
    for (size_t i = 0; i < categoryPairs.size(); ++i) {
-      for (size_t j = 0; j < matrices[i]->getN(); ++j) {
-         std::cout << matrices[i]->getName(j) << '\t';
+      for (size_t j = 0; j < matrices[i].getN(); ++j) {
+         std::cout << matrices[i].getName(j) << '\t';
       }
       std::cout << '\n';
-      matrices[i]->print();
+      matrices[i].print();
       std::cout << '\n';
    }
 }
