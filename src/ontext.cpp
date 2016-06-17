@@ -1,5 +1,5 @@
 /*!
- * \file       prontext2.cpp
+ * \file       ontext.cpp
  * \brief      OntExt implementation linked to Prophet
  * \author     Diorge Brognara
  * \date       2016
