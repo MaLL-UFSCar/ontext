@@ -205,49 +205,69 @@ void readCategoriesFile(const std::string &filename,
  */
 void readSvoFile(const std::string &filename) {
    std::ifstream svostream(filename);
-   std::string subject;
-   std::string verbalphrase;
-   std::string object;
-   std::string countstr;
-   int count;
 
+   struct svorow {
+      std::string s;
+      std::string v;
+      std::string o;
+      std::string nstr;
+   };
+
+   std::vector<svorow*> rows;
+   rows.reserve((size_t)1 << 25);
    while (svostream.peek() != std::char_traits<char>::eof()) {
-      std::getline(svostream, subject, '\t');
-      std::getline(svostream, verbalphrase, '\t');
-      std::getline(svostream, object, '\t');
-      std::getline(svostream, countstr);
+      auto r = new svorow;
+      std::getline(svostream, r->s, '\t');
+      std::getline(svostream, r->v, '\t');
+      std::getline(svostream, r->o, '\t');
+      std::getline(svostream, r->nstr);
+      rows.push_back(r);
+   }
+   svostream.close();
+   
+   #ifndef INNER_PARALLEL
+   #define INNER_PARALLEL false
+   #endif
 
+   #pragma omp parallel for
+   for (size_t it1 = 0; it1 < rows.size(); ++it1) {
+      auto &row = *rows[it1];
       size_t size = categoryPairs.size();
-      #pragma omp parallel for
+      #pragma omp parallel for if(INNER_PARALLEL)
       for (size_t it = 0; it < size; ++it) {
          auto &pair = categoryPairs[it];
-         if (instances[pair.first]->count(subject) > 0
-               && instances[pair.second]->count(object) > 0) {
-            count = std::stoi(countstr);
-            context so = std::make_pair(subject, object);
+         if (instances[pair.first]->count(row.s) > 0
+               && instances[pair.second]->count(row.o) > 0) {
+            int count = std::stoi(row.nstr);
+            context so = std::make_pair(row.s, row.o);
             contextCounter* c = coOccurrences[pair];
             #pragma omp critical (foundpair)
             {
                if (c->count(so) == 0) {
                   (*c)[so] = new counter;
                }
-               (*((*c)[so]))[verbalphrase] += count;
+               (*((*c)[so]))[row.v] += count;
             }
-         } else if (instances[pair.second]->count(subject) > 0
-               && instances[pair.first]->count(object) > 0) {
-            count = std::stoi(countstr);
-            context so = std::make_pair(subject, object);
+         } else if (instances[pair.second]->count(row.s) > 0
+               && instances[pair.first]->count(row.o) > 0) {
+            int count = std::stoi(row.nstr);
+            context so = std::make_pair(row.s, row.o);
             contextCounter* c = coOccurrences[pair];
             #pragma omp critical (foundpair)
             {
                if (c->count(so) == 0) {
                   (*c)[so] = new counter;
                }
-               (*((*c)[so]))[verbalphrase] += count;
+               (*((*c)[so]))[row.v] += count;
             }
          }
       }
    }
+
+   for(size_t it = 0; it < rows.size(); ++it) {
+      delete rows[it];
+   }
+
 }
 
 
