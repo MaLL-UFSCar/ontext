@@ -217,25 +217,34 @@ void readSvoFile(const std::string &filename) {
       std::getline(svostream, object, '\t');
       std::getline(svostream, countstr);
 
-      for (const auto &pair : categoryPairs) {
+      size_t size = categoryPairs.size();
+      #pragma omp parallel for
+      for (size_t it = 0; it < size; ++it) {
+         auto &pair = categoryPairs[it];
          if (instances[pair.first]->count(subject) > 0
                && instances[pair.second]->count(object) > 0) {
             count = std::stoi(countstr);
             context so = std::make_pair(subject, object);
             contextCounter* c = coOccurrences[pair];
-            if (c->count(so) == 0) {
-               (*c)[so] = new counter;
+            #pragma omp critical (foundpair)
+            {
+               if (c->count(so) == 0) {
+                  (*c)[so] = new counter;
+               }
+               (*((*c)[so]))[verbalphrase] += count;
             }
-            (*((*c)[so]))[verbalphrase] += count;
          } else if (instances[pair.second]->count(subject) > 0
                && instances[pair.first]->count(object) > 0) {
             count = std::stoi(countstr);
             context so = std::make_pair(subject, object);
             contextCounter* c = coOccurrences[pair];
-            if (c->count(so) == 0) {
-               (*c)[so] = new counter;
+            #pragma omp critical (foundpair)
+            {
+               if (c->count(so) == 0) {
+                  (*c)[so] = new counter;
+               }
+               (*((*c)[so]))[verbalphrase] += count;
             }
-            (*((*c)[so]))[verbalphrase] += count;
          }
       }
    }
