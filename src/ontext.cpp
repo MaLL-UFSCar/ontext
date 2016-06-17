@@ -281,9 +281,12 @@ private:
          std::unordered_map<context, unsigned int, hashpair> cooccurring;
 
          for (const std::pair<context, counter*> &counters : (*ccounter)) {
-            foundContexts.insert(counters.first.first);
-            foundContexts.insert(counters.first.second);
-            cooccurring[counters.first] += 1;
+            for (const std::pair<std::string, unsigned int> &ctx1 : *(counters.second)) {
+               foundContexts.insert(ctx1.first);
+               for (const std::pair<std::string, unsigned int> &ctx2 : *(counters.second)) {
+                  cooccurring[std::make_pair(ctx1.first, ctx2.first)] += 1;
+               }
+            }
          }
 
          size_t n = foundContexts.size();
@@ -292,7 +295,6 @@ private:
          size_t i, j;
          i = 0;
          for (auto ctx1 : foundContexts) {
-            // TODO: bug. the name is being set to the subject, not verbal phrase
             m.setName(i, ctx1);
             j = 0;
             for (auto ctx2 : foundContexts) {
