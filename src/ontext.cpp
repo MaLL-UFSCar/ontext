@@ -26,7 +26,7 @@ class CoOccurrenceMatrix {
 private:
    size_t n;
    std::vector<std::vector<double> > matrix;
-   std::string* features;
+   std::vector<std::string> features;
 
 public:
 
@@ -35,13 +35,10 @@ public:
     * \param size Size of the matrix
     * \brief Creates a size X size co-occurrence matrix
     */
-   CoOccurrenceMatrix(size_t size) : n(size), matrix(size, std::vector<double>(size)) {
-      features = new std::string[size];
-   }
-
-   ~CoOccurrenceMatrix() {
-      delete[] features;
-   }
+   CoOccurrenceMatrix(size_t size) :
+      n(size),
+      matrix(size, std::vector<double>(size)),
+      features(size) { }
 
    /*!
     * \fn size_t getN() const
@@ -292,6 +289,7 @@ CoOccurrenceMatrix** buildMatrices() {
       size_t i, j;
       i = 0;
       for (auto ctx1 : foundContexts) {
+         // TODO: bug. the name is being set to the subject, not verbal phrase
          m->setName(i, ctx1);
          j = 0;
          for (auto ctx2 : foundContexts) {
@@ -333,6 +331,10 @@ int main (int argc, char** argv) {
    // TODO: instead of printing the matrix,
    // should call KMeans on each matrix and output the relations
    for (size_t i = 0; i < categoryPairs.size(); ++i) {
+      for (size_t j = 0; j < matrices[i]->getN(); ++j) {
+         std::cout << matrices[i]->getName(j) << '\t';
+      }
+      std::cout << '\n';
       matrices[i]->print();
       std::cout << '\n';
    }
