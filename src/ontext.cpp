@@ -298,7 +298,7 @@ std::vector<CoOccurrenceMatrix> buildMatrices() {
          }
          ++i;
       }
-      vec[it] = std::move(m);
+      vec[it] = m;
    }
    return vec;
 }
