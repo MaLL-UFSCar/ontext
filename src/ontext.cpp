@@ -16,6 +16,7 @@
 #include <vector>
 #include <set>
 #include <memory>
+#include <numeric>
 
 
 /*!
@@ -92,6 +93,22 @@ public:
          std::cout << '\n';
       }
       std::cout << '\n';
+   }
+
+   /*!
+    * \fn void normalize()
+    * \brief Normalizes the matrix
+    * The normalization is per row, that is, the sum of each row will be
+    * always equals 1. Note the main diagonal is always at least 1,
+    * so there won't be null rows.
+    */
+   void normalize() {
+      for (std::vector<double> &row : matrix) {
+         double rowsum = std::accumulate(row.begin(), row.end(), 0.0);
+         for (size_t j = 0; j < n; ++j) {
+            row[j] = row[j] / rowsum;
+         }
+      }
    }
 };
 
@@ -303,6 +320,7 @@ private:
             }
             ++i;
          }
+         m.normalize();
          vec[it] = m;
       }
       return vec;
