@@ -354,9 +354,6 @@ public:
  * argv[3]: SVO file
  */
 int main (int argc, char** argv) {
-   /*
-    * arguments
-    */
    std::string categoryPairsFilename(argv[1]);
    std::string instanceDir(argv[2]);
    std::string svoFilename(argv[3]);
