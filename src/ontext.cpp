@@ -155,7 +155,7 @@ private:
    using occurrences = map<categoryPair, contextCounter*, hashpair>;
 
 
-   map<std::string, std::unordered_set<std::string>* > instances;
+   map<std::string, std::unordered_set<std::string> > instances;
    std::vector<categoryPair> categoryPairs;
    occurrences coOccurrences;
 
@@ -184,25 +184,25 @@ private:
          coOccurrences[pair] = new contextCounter;
 
          if (instances.count(category1) == 0) {
-            auto newcatset = new std::unordered_set<std::string>;
-            newcatset->reserve(8192);
-            instances[category1] = newcatset;
+            std::unordered_set<std::string> newcatset;
+            newcatset.reserve(8192);
             std::ifstream instancestream(instancesDirectoryName + category1);
             std::string seed;
             while (instancestream >> seed) {
-               newcatset->insert(seed);
+               newcatset.insert(seed);
             }
+            instances[category1] = newcatset;
          }
 
          if (instances.count(category2) == 0) {
-            auto newcatset = new std::unordered_set<std::string>;
-            newcatset->reserve(8192);
-            instances[category2] = newcatset;
+            std::unordered_set<std::string> newcatset;
+            newcatset.reserve(8192);
             std::ifstream instancestream(instancesDirectoryName + category2);
             std::string seed;
             while (instancestream >> seed) {
-               newcatset->insert(seed);
+               newcatset.insert(seed);
             }
+            instances[category2] = newcatset;
          }
       }
    }
@@ -248,8 +248,8 @@ private:
          #pragma omp parallel for if(INNER_PARALLEL)
          for (size_t it = 0; it < size; ++it) {
             auto &pair = categoryPairs[it];
-            if (instances[pair.first]->count(row.s) > 0
-                  && instances[pair.second]->count(row.o) > 0) {
+            if (instances[pair.first].count(row.s) > 0
+                  && instances[pair.second].count(row.o) > 0) {
                int count = std::stoi(row.nstr);
                context so = std::make_pair(row.s, row.o);
                contextCounter* c = coOccurrences[pair];
@@ -260,8 +260,8 @@ private:
                   }
                   (*((*c)[so]))[row.v] += count;
                }
-            } else if (instances[pair.second]->count(row.s) > 0
-                  && instances[pair.first]->count(row.o) > 0) {
+            } else if (instances[pair.second].count(row.s) > 0
+                  && instances[pair.first].count(row.o) > 0) {
                int count = std::stoi(row.nstr);
                context so = std::make_pair(row.s, row.o);
                contextCounter* c = coOccurrences[pair];
