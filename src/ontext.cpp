@@ -295,7 +295,7 @@ private:
          const auto &catpair = categoryPairs[it];
          contextCounter* ccounter = coOccurrences[catpair];
          std::set<std::string> foundContexts;
-         std::unordered_map<context, unsigned int, hashpair> cooccurring;
+         map<context, unsigned int, hashpair> cooccurring;
 
          for (const std::pair<context, counter*> &counters : (*ccounter)) {
             for (const std::pair<std::string, unsigned int> &ctx1 : *(counters.second)) {
