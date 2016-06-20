@@ -280,12 +280,11 @@ private:
 
 
    /*!
-   * \fn std::vector<CoOccurrenceMatrix> buildMatrices()
+   * \fn void buildMatrices()
    * \brief Builds the co-occurrence matrices
    */
-   std::vector<CoOccurrenceMatrix> buildMatrices() {
+   void buildMatrices() {
       size_t size = categoryPairs.size();
-      std::vector<CoOccurrenceMatrix> vec(size, CoOccurrenceMatrix(0));
 
       #pragma omp parallel for
       for (size_t it = 0; it < size; ++it) {
@@ -318,9 +317,8 @@ private:
             ++i;
          }
          m.normalize();
-         vec[it] = m;
+         // TODO: k-means and relation output
       }
-      return vec;
    }
 
 public:
@@ -344,18 +342,7 @@ public:
    void run() {
       readCategoriesFile();
       readSvoFile();
-      auto matrices = buildMatrices();
-
-      // TODO: instead of printing the matrix,
-      // should call KMeans on each matrix and output the relations
-      for (size_t i = 0; i < categoryPairs.size(); ++i) {
-         for (size_t j = 0; j < matrices[i].getN(); ++j) {
-            std::cout << matrices[i].getName(j) << '\t';
-         }
-         std::cout << '\n';
-         matrices[i].print();
-         std::cout << '\n';
-      }
+      buildMatrices();
    }
 
 
