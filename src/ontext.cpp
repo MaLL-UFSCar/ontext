@@ -286,7 +286,11 @@ private:
    void buildMatrices() {
       size_t size = categoryPairs.size();
 
-      #pragma omp parallel for
+      #ifndef PARALLEL_MATRIX
+      #define PARALLEL_MATRIX 1
+      #endif
+
+      #pragma omp parallel for num_threads(PARALLEL_MATRIX)
       for (size_t it = 0; it < size; ++it) {
          const auto &catpair = categoryPairs[it];
          contextCounter* ccounter = coOccurrences[catpair];
