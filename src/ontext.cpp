@@ -225,15 +225,15 @@ private:
          std::string nstr;
       };
 
-      std::vector<svorow*> rows;
+      std::vector<svorow> rows;
       rows.reserve((size_t)1 << 25);
       while (svostream.peek() != std::char_traits<char>::eof()) {
-         auto r = new svorow;
-         std::getline(svostream, r->s, '\t');
-         std::getline(svostream, r->v, '\t');
-         std::getline(svostream, r->o, '\t');
-         std::getline(svostream, r->nstr);
-         rows.push_back(r);
+         svorow row;
+         std::getline(svostream, row.s, '\t');
+         std::getline(svostream, row.v, '\t');
+         std::getline(svostream, row.o, '\t');
+         std::getline(svostream, row.nstr);
+         rows.push_back(std::move(row));
       }
       svostream.close();
       
@@ -243,7 +243,7 @@ private:
 
       #pragma omp parallel for
       for (size_t it1 = 0; it1 < rows.size(); ++it1) {
-         auto &row = *rows[it1];
+         auto &row = rows[it1];
          size_t size = categoryPairs.size();
          #pragma omp parallel for if(INNER_PARALLEL)
          for (size_t it = 0; it < size; ++it) {
@@ -274,10 +274,6 @@ private:
                }
             }
          }
-      }
-
-      for(size_t it = 0; it < rows.size(); ++it) {
-         delete rows[it];
       }
 
    }
