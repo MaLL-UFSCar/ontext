@@ -103,10 +103,11 @@ public:
     * so there won't be null rows.
     */
    void normalize() {
-      for (std::vector<double> &row : matrix) {
-         double rowsum = std::accumulate(row.begin(), row.end(), 0.0);
+      #pragma omp parallel for
+      for (size_t i = 0; i < n; ++i ){
+         double rowsum = std::accumulate(matrix[i].begin(), matrix[i].end(), 0.0);
          for (size_t j = 0; j < n; ++j) {
-            row[j] = row[j] / rowsum;
+            matrix[i][j] /= rowsum;
          }
       }
    }
