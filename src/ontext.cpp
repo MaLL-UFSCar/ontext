@@ -322,6 +322,8 @@ private:
          }
          m.normalize();
          // TODO: k-means and relation output
+         m.print();
+         std::cout << '\n';
       }
    }
 
